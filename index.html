@@ -422,7 +422,7 @@
         highlightCode();
         // Clear error line highlights
         lineNumbers.querySelectorAll('span').forEach(s => { s.style.color = ''; s.style.fontWeight = ''; });
-        requestAnimationFrame(fitToView);
+        setTimeout(fitToView, 50);
       } catch (err) {
         const msg = err.message || 'Invalid syntax';
         // Extract line number from error message
