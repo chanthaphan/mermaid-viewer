@@ -110,6 +110,8 @@
           <button data-type="classfull">Class (Full)</button>
           <button data-type="seqadvanced">Sequence (Advanced)</button>
           <button data-type="flowchartStyles">Styled Flowchart</button>
+          <button data-type="zenuml">ZenUML</button>
+          <button data-type="swimlane">Swimlane Flowchart</button>
         </div>
       </div>
       <button id="fullscreen-btn" title="Toggle fullscreen preview (F11)">Fullscreen</button>
@@ -215,7 +217,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mermaid-js/mermaid-zenuml@0.2.0/dist/mermaid-zenuml.min.js"></script>
   <script>
+    (async () => {
+    if (window['mermaid-zenuml']) {
+      await mermaid.registerExternalDiagrams([window['mermaid-zenuml']]);
+    }
     mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
 
     const code = document.getElementById('code');
@@ -971,6 +978,35 @@ web_app - satisfies -> session_mgmt`,
     style D fill:#3498db,color:#fff
     style F fill:#9b59b6,color:#fff
     style C fill:#f39c12,color:#fff`,
+      zenuml: `zenuml
+    title Order Service
+    @Actor Client
+    @Boundary OrderController
+    @Entity OrderService
+
+    Client->OrderController.create() {
+        OrderService.validate()
+        OrderService.save()
+    }`,
+      swimlane: `graph TB
+    subgraph Customer
+        A[Place Order] --> B[Make Payment]
+    end
+    subgraph Sales Team
+        B --> C[Verify Payment]
+        C --> D{Approved?}
+        D -->|Yes| E[Confirm Order]
+        D -->|No| F[Reject Order]
+    end
+    subgraph Warehouse
+        E --> G[Pick Items]
+        G --> H[Pack Order]
+    end
+    subgraph Shipping
+        H --> I[Ship Order]
+        I --> J[Deliver to Customer]
+    end
+    F --> A`,
       network: `graph TB
     subgraph Internet
         USER[Users / Clients]
@@ -1134,6 +1170,7 @@ web_app - satisfies -> session_mgmt`,
     // Initial render
     updateLineNumbers();
     renderDiagram();
+    })();
   </script>
 </body>
 </html>
