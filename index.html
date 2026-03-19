@@ -105,6 +105,11 @@
           <button data-type="kanban">Kanban Board</button>
           <button data-type="packet">Packet Diagram</button>
           <button data-type="architecture">Architecture</button>
+          <button data-type="network">Network Diagram</button>
+          <button data-type="flowchartLR">Flowchart (LR)</button>
+          <button data-type="classfull">Class (Full)</button>
+          <button data-type="seqadvanced">Sequence (Advanced)</button>
+          <button data-type="flowchartStyles">Styled Flowchart</button>
         </div>
       </div>
       <button id="fullscreen-btn" title="Toggle fullscreen preview (F11)">Fullscreen</button>
@@ -890,6 +895,113 @@ web_app - satisfies -> session_mgmt`,
 
     web:R --> L:api
     api:R --> L:db`,
+      flowchartLR: `graph LR
+    A[Input] --> B[Process]
+    B --> C{Valid?}
+    C -->|Yes| D[Save]
+    C -->|No| E[Error]
+    D --> F[Output]
+    E --> B
+    style A fill:#d4edda
+    style F fill:#d4edda
+    style E fill:#f8d7da`,
+      classfull: `classDiagram
+    class Vehicle {
+        +String make
+        +String model
+        +int year
+        +start() void
+        +stop() void
+    }
+    class Car {
+        +int doors
+        +openTrunk() void
+    }
+    class Truck {
+        +float payload
+        +loadCargo() void
+    }
+    class Electric {
+        +int batteryCapacity
+        +charge() void
+    }
+    Vehicle <|-- Car
+    Vehicle <|-- Truck
+    Car <|-- Electric
+    Vehicle : +getInfo() String`,
+      seqadvanced: `sequenceDiagram
+    autonumber
+    actor User
+    participant FE as Frontend
+    participant API as API Server
+    participant DB as Database
+    participant Cache as Redis Cache
+
+    User->>+FE: Click Login
+    FE->>+API: POST /auth/login
+    API->>+Cache: Check session
+    Cache-->>-API: Miss
+    API->>+DB: Query user
+    DB-->>-API: User data
+    API->>Cache: Store session
+    API-->>-FE: JWT Token
+    FE-->>-User: Dashboard
+
+    Note over User,Cache: Subsequent requests use cached session
+
+    User->>+FE: Request data
+    FE->>+API: GET /api/data
+    API->>+Cache: Check cache
+    Cache-->>-API: Hit
+    API-->>-FE: Cached data
+    FE-->>-User: Display`,
+      flowchartStyles: `graph TD
+    A([Start]) --> B[\Input Data/]
+    B --> C{Validate}
+    C -->|Pass| D[[Process]]
+    C -->|Fail| E>Error Log]
+    D --> F[(Database)]
+    D --> G{{Transform}}
+    G --> H[/Report\\]
+    E --> B
+    F --> I((End))
+    H --> I
+    style A fill:#2ecc71,color:#fff
+    style I fill:#e74c3c,color:#fff
+    style D fill:#3498db,color:#fff
+    style F fill:#9b59b6,color:#fff
+    style C fill:#f39c12,color:#fff`,
+      network: `graph TB
+    subgraph Internet
+        USER[Users / Clients]
+    end
+    subgraph DMZ
+        FW1[Firewall]
+        LB[Load Balancer]
+    end
+    subgraph Internal Network
+        subgraph Web Tier
+            WEB1[Web Server 1]
+            WEB2[Web Server 2]
+        end
+        subgraph App Tier
+            APP1[App Server 1]
+            APP2[App Server 2]
+        end
+        subgraph Data Tier
+            DB1[(Primary DB)]
+            DB2[(Replica DB)]
+        end
+    end
+    USER -->|HTTPS| FW1
+    FW1 --> LB
+    LB --> WEB1
+    LB --> WEB2
+    WEB1 --> APP1
+    WEB2 --> APP2
+    APP1 --> DB1
+    APP2 --> DB1
+    DB1 -.->|Replication| DB2`,
     };
     const examplesMenu = document.getElementById('examples-menu');
     document.getElementById('examples-btn').addEventListener('click', (e) => {
