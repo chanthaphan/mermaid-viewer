@@ -394,6 +394,17 @@
         const id = `mermaid-${++renderCounter}`;
         const { svg } = await mermaid.render(id, src);
         preview.innerHTML = svg;
+        // Set SVG to its natural viewBox dimensions for proper fit-to-view
+        const svgEl = preview.querySelector('svg');
+        if (svgEl) {
+          const vb = svgEl.getAttribute('viewBox');
+          if (vb) {
+            const parts = vb.split(/\s+/).map(Number);
+            svgEl.setAttribute('width', parts[2]);
+            svgEl.setAttribute('height', parts[3]);
+          }
+          svgEl.style.maxWidth = 'none';
+        }
         errorEl.style.display = 'none';
         currentErrorLine = null;
         highlightCode();
