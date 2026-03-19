@@ -271,6 +271,8 @@
     if (window['mermaid-zenuml']) {
       await mermaid.registerExternalDiagrams([window['mermaid-zenuml']]);
     }
+    // Note: logos: icon prefix (e.g. logos:aws-s3) requires Mermaid ESM build with Iconify.
+    // The CDN build supports built-in icons: cloud, database, disk, internet, server.
     mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
 
     const code = document.getElementById('code');
@@ -1092,114 +1094,37 @@ web_app - satisfies -> session_mgmt`,
     junctionCenter:R -- L:junctionRight
     top_gateway:B -- T:junctionRight
     bottom_gateway:T -- B:junctionRight`,
-      azureArch: `graph TB
-    subgraph Azure Cloud
-        subgraph Frontend
-            CDN[Azure CDN]
-            APIM[API Management]
-        end
-        subgraph Compute
-            AKS[AKS Cluster]
-            FUNC[Azure Functions]
-        end
-        subgraph Data
-            SQL[(Azure SQL)]
-            COSMOS[(Cosmos DB)]
-            BLOB[(Blob Storage)]
-        end
-        subgraph Messaging
-            SB[Service Bus]
-            EH[Event Hubs]
-        end
-        subgraph Security
-            KV[Key Vault]
-            AAD[Azure AD]
-        end
-        subgraph Monitoring
-            AI[App Insights]
-            LOG[Log Analytics]
-        end
-    end
-    Users[Users] -->|HTTPS| CDN
-    CDN --> APIM
-    APIM --> AKS
-    APIM --> FUNC
-    AKS --> SQL
-    AKS --> COSMOS
-    FUNC --> BLOB
-    AKS --> SB
-    SB --> FUNC
-    EH --> FUNC
-    AKS --> KV
-    Users -->|OAuth| AAD
-    AKS --> AI
-    FUNC --> AI
-    AI --> LOG
-    style CDN fill:#0078D4,color:#fff
-    style APIM fill:#0078D4,color:#fff
-    style AKS fill:#326CE5,color:#fff
-    style FUNC fill:#F7D048,color:#000
-    style SQL fill:#0078D4,color:#fff
-    style COSMOS fill:#0078D4,color:#fff
-    style BLOB fill:#0078D4,color:#fff
-    style SB fill:#0078D4,color:#fff
-    style EH fill:#0078D4,color:#fff
-    style KV fill:#0078D4,color:#fff
-    style AAD fill:#0078D4,color:#fff
-    style AI fill:#68217A,color:#fff
-    style LOG fill:#68217A,color:#fff`,
-      awsArch: `graph TB
-    subgraph AWS Cloud
-        subgraph Edge
-            CF[CloudFront]
-            R53[Route 53]
-        end
-        subgraph Compute
-            ALB[ALB]
-            ECS[ECS Fargate]
-            LAMBDA[Lambda]
-        end
-        subgraph Database
-            RDS[(RDS PostgreSQL)]
-            DDB[(DynamoDB)]
-            REDIS[(ElastiCache)]
-        end
-        subgraph Storage
-            S3[(S3 Bucket)]
-        end
-        subgraph Messaging
-            SQS[SQS Queue]
-            SNS[SNS Topic]
-        end
-        subgraph Auth
-            COG[Cognito]
-        end
-    end
-    Users[Users] -->|DNS| R53
-    R53 --> CF
-    CF --> ALB
-    ALB --> ECS
-    ECS --> RDS
-    ECS --> DDB
-    ECS --> REDIS
-    ECS --> SQS
-    SQS --> LAMBDA
-    LAMBDA --> DDB
-    LAMBDA --> S3
-    SNS --> LAMBDA
-    Users -->|Auth| COG
-    style CF fill:#FF9900,color:#000
-    style R53 fill:#FF9900,color:#000
-    style ALB fill:#FF9900,color:#000
-    style ECS fill:#FF9900,color:#000
-    style LAMBDA fill:#FF9900,color:#000
-    style RDS fill:#3B48CC,color:#fff
-    style DDB fill:#3B48CC,color:#fff
-    style REDIS fill:#3B48CC,color:#fff
-    style S3 fill:#3F8624,color:#fff
-    style SQS fill:#FF4F8B,color:#fff
-    style SNS fill:#FF4F8B,color:#fff
-    style COG fill:#FF9900,color:#000`,
+      azureArch: `architecture-beta
+    group azure(cloud)[Azure Cloud]
+
+    service apim(internet)[API Management] in azure
+    service func(server)[Functions] in azure
+    service aks(server)[AKS Cluster] in azure
+    service sql(database)[SQL Database] in azure
+    service cosmos(database)[Cosmos DB] in azure
+    service blob(disk)[Blob Storage] in azure
+    service sb(server)[Service Bus] in azure
+
+    apim:R --> L:aks
+    apim:B --> T:func
+    aks:B --> T:sql
+    aks:R --> L:cosmos
+    func:B --> T:blob
+    aks:R --> L:sb
+    sb:B --> T:func`,
+      awsArch: `architecture-beta
+    group aws(cloud)[AWS Cloud]
+
+    service ec2(server)[EC2 Server] in aws
+    service rds(database)[RDS Database] in aws
+    service s3(disk)[S3 Storage] in aws
+    service glacier(disk)[Glacier] in aws
+    service lambda(server)[Lambda] in aws
+
+    ec2:R -- L:rds
+    lambda:T -- B:ec2
+    s3:T -- B:rds
+    glacier:T -- B:ec2`,
       ganttAdvanced: `gantt
     dateFormat  YYYY-MM-DD
     title       Adding GANTT diagram functionality to mermaid
