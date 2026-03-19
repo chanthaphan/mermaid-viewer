@@ -123,6 +123,7 @@
           <button data-type="architectureAdv">Architecture (Advanced)</button>
           <button data-type="azureArch">Azure Architecture</button>
           <button data-type="awsArch">AWS Architecture</button>
+          <button data-type="iconGuide">Icon Guide (All Icons)</button>
         </div>
       </div>
       <button id="fullscreen-btn" title="Toggle fullscreen preview (F11)">Fullscreen</button>
@@ -1125,6 +1126,27 @@ web_app - satisfies -> session_mgmt`,
     lambda:T -- B:ec2
     s3:T -- B:rds
     glacier:T -- B:ec2`,
+      iconGuide: `architecture-beta
+    %% All 5 built-in icons + group icon
+    %% Icons: cloud, database, disk, internet, server
+    %% Use junction nodes to avoid edge overlaps
+
+    group infra(cloud)[Infrastructure]
+
+    service web(internet)[Internet Gateway] in infra
+    service app(server)[App Server] in infra
+    service db(database)[Database] in infra
+    service storage(disk)[File Storage] in infra
+    service backup(cloud)[Cloud Backup] in infra
+
+    %% Use junctions to route edges cleanly
+    junction hub
+
+    web:R --> L:app
+    app:R --> L:hub
+    hub:R --> L:db
+    hub:B --> T:storage
+    storage:R --> L:backup`,
       ganttAdvanced: `gantt
     dateFormat  YYYY-MM-DD
     title       Adding GANTT diagram functionality to mermaid
