@@ -311,11 +311,35 @@
         ctx.fillStyle = bg;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
-      // Build a clean SVG data URL with explicit xmlns and dimensions
-      let svgStr = info.svgData;
-      if (!svgStr.includes('xmlns=')) {
-        svgStr = svgStr.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+      // Clone SVG and replace foreignObject with text to avoid canvas tainting
+      const clone = svgEl.cloneNode(true);
+      if (vb) {
+        const [,, vw, vh] = vb.split(/\s+/).map(Number);
+        clone.setAttribute('width', vw);
+        clone.setAttribute('height', vh);
+        clone.removeAttribute('style');
       }
+      clone.querySelectorAll('foreignObject').forEach(fo => {
+        const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const x = parseFloat(fo.getAttribute('x') || 0) + parseFloat(fo.getAttribute('width') || 0) / 2;
+        const y = parseFloat(fo.getAttribute('y') || 0) + parseFloat(fo.getAttribute('height') || 0) / 2;
+        textEl.setAttribute('x', x);
+        textEl.setAttribute('y', y);
+        textEl.setAttribute('text-anchor', 'middle');
+        textEl.setAttribute('dominant-baseline', 'central');
+        textEl.setAttribute('font-size', '14');
+        textEl.setAttribute('font-family', 'system-ui, sans-serif');
+        // Get text color from the foreignObject content
+        const span = fo.querySelector('span, div, p');
+        if (span) {
+          const style = span.getAttribute('style') || '';
+          const colorMatch = style.match(/color\s*:\s*([^;]+)/);
+          if (colorMatch) textEl.setAttribute('fill', colorMatch[1].trim());
+        }
+        textEl.textContent = fo.textContent.trim();
+        fo.parentNode.replaceChild(textEl, fo);
+      });
+      const svgStr = new XMLSerializer().serializeToString(clone);
       const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const img = new Image();
@@ -327,18 +351,7 @@
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        // Fallback: try data URL approach
-        const dataUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
-        const img2 = new Image();
-        img2.onload = () => {
-          ctx.scale(s, s);
-          ctx.drawImage(img2, 0, 0, w, h);
-          callback(canvas);
-        };
-        img2.onerror = () => {
-          alert('Raster export failed for this diagram. Please use "Save as SVG" instead.');
-        };
-        img2.src = dataUrl;
+        alert('Export failed. Please use "Save as SVG" instead.');
       };
       img.src = url;
     }
