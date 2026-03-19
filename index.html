@@ -95,6 +95,16 @@
           <button data-type="journey">User Journey</button>
           <button data-type="mindmap">Mindmap</button>
           <button data-type="gitgraph">Git Graph</button>
+          <button data-type="c4context">C4 Context</button>
+          <button data-type="timeline">Timeline</button>
+          <button data-type="sankey">Sankey</button>
+          <button data-type="xy">XY Chart</button>
+          <button data-type="block">Block Diagram</button>
+          <button data-type="quadrant">Quadrant Chart</button>
+          <button data-type="requirement">Requirement</button>
+          <button data-type="kanban">Kanban Board</button>
+          <button data-type="packet">Packet Diagram</button>
+          <button data-type="architecture">Architecture</button>
         </div>
       </div>
       <button id="fullscreen-btn" title="Toggle fullscreen preview (F11)">Fullscreen</button>
@@ -782,6 +792,100 @@
     checkout main
     merge develop
     commit`,
+      c4context: `C4Context
+    title System Context Diagram
+    Person(customer, "Customer", "A user of the system")
+    System(webApp, "Web Application", "Delivers content")
+    System_Ext(email, "Email System", "Sends emails")
+    Rel(customer, webApp, "Uses")
+    Rel(webApp, email, "Sends emails using")`,
+      timeline: `timeline
+    title Product Launch Timeline
+    2024-Q1 : Research
+            : User interviews
+    2024-Q2 : Design
+            : Prototyping
+    2024-Q3 : Development
+            : Alpha release
+    2024-Q4 : Launch
+            : Marketing push`,
+      sankey: `sankey-beta
+    Source A,Target X,30
+    Source A,Target Y,20
+    Source B,Target X,15
+    Source B,Target Z,25
+    Target X,Final,45
+    Target Y,Final,20
+    Target Z,Final,25`,
+      xy: `xychart-beta
+    title "Monthly Sales"
+    x-axis [Jan, Feb, Mar, Apr, May, Jun]
+    y-axis "Revenue (k)" 0 --> 100
+    bar [30, 45, 60, 55, 70, 85]
+    line [25, 40, 55, 50, 65, 80]`,
+      block: `block-beta
+    columns 3
+    a["Frontend"] b["API Gateway"] c["Backend"]
+    d["React App"]:1 e["REST API"]:1 f["Node.js"]:1
+    g["CDN"]:1 h["Load Balancer"]:1 i["Database"]:1`,
+      quadrant: `quadrant-beta
+    title Feature Priority Matrix
+    x-axis Low Effort --> High Effort
+    y-axis Low Impact --> High Impact
+    quadrant-1 Plan
+    quadrant-2 Do First
+    quadrant-3 Delegate
+    quadrant-4 Eliminate
+    Feature A: [0.3, 0.8]
+    Feature B: [0.7, 0.9]
+    Feature C: [0.2, 0.3]
+    Feature D: [0.8, 0.2]
+    Feature E: [0.5, 0.6]`,
+      requirement: `requirementDiagram
+    requirement user_auth {
+        id: REQ-001
+        text: Users must authenticate
+        risk: high
+        verifymethod: test
+    }
+    requirement session_mgmt {
+        id: REQ-002
+        text: Sessions expire after 30min
+        risk: medium
+        verifymethod: inspection
+    }
+    element web_app {
+        type: application
+    }
+    web_app - satisfies -> user_auth
+    web_app - satisfies -> session_mgmt`,
+      kanban: `kanban
+    Todo
+        Design homepage
+        Write API docs
+    In Progress
+        Build auth module
+        Setup CI/CD
+    Done
+        Project setup
+        Database schema`,
+      packet: `packet-beta
+    0-15: "Source Port"
+    16-31: "Destination Port"
+    32-63: "Sequence Number"
+    64-95: "Acknowledgment Number"
+    96-99: "Data Offset"
+    100-105: "Reserved"
+    106-111: "Flags"
+    112-127: "Window Size"`,
+      architecture: `architecture-beta
+    group cloud(cloud)[Cloud]
+    service api(server)[API] in cloud
+    service db(database)[DB] in cloud
+    service web(internet)[Web] in cloud
+
+    web:R --> L:api
+    api:R --> L:db`,
     };
     const examplesMenu = document.getElementById('examples-menu');
     document.getElementById('examples-btn').addEventListener('click', (e) => {
