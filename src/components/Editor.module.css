@@ -1,0 +1,197 @@
+.editorPane {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #d4d4d4;
+}
+
+.editorWrap {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.codeArea {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.lineNumbers {
+  padding: 16px 12px;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  background: #f0ead6;
+  color: #1B3D6D;
+  text-align: right;
+  user-select: none;
+  overflow: hidden;
+  min-width: 48px;
+  border-right: 1px solid #d4d4d4;
+}
+
+.lineNumbers span {
+  display: block;
+}
+
+.textarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 16px;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  background: transparent;
+  color: transparent;
+  caret-color: #1e293b;
+  tab-size: 2;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+  z-index: 2;
+}
+
+.highlightLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  background: #f8fafc;
+  tab-size: 2;
+  white-space: pre;
+  overflow-x: auto;
+  overflow-y: auto;
+  z-index: 1;
+  pointer-events: none;
+  color: #1e293b;
+}
+
+/* Status bar */
+.statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 12px;
+  background: #eee8d5;
+  border-top: 1px solid #d4d4d4;
+  font-size: 11px;
+  color: #64748b;
+  user-select: none;
+  gap: 8px;
+}
+
+.statusRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.statusItem svg {
+  opacity: 0.5;
+}
+
+.statusDot {
+  width: 2px;
+  height: 2px;
+  background: #94a3b8;
+  border-radius: 50%;
+}
+
+.statusHint {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+/* Error bar */
+.error {
+  display: none;
+  align-items: flex-start;
+  gap: 8px;
+  color: #dc2626;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-family: monospace;
+  background: #fef2f2;
+  border-top: 1px solid #fecaca;
+  max-height: 100px;
+  overflow: auto;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.errorVisible {
+  display: flex;
+}
+
+.error:hover {
+  background: #fee2e2;
+}
+
+.errorContent {
+  flex: 1;
+  cursor: pointer;
+}
+
+.errorHint {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.fixBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  background: #fff;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.fixBtn:hover {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+
+.fixBtn svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .editorPane {
+    width: 100% !important;
+    border-right: none;
+    border-bottom: 1px solid #d4d4d4;
+  }
+  .statusHint {
+    display: none;
+  }
+}

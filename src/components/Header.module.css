@@ -1,0 +1,180 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #1B3D6D;
+  border-bottom: 1px solid #152e54;
+  color: #fff;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.titleLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.subtitle {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.6;
+  display: block;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  background: rgba(255,255,255,0.2);
+  margin: 0 2px;
+}
+
+.toolbarBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+.toolbarBtn:hover {
+  background: rgba(255,255,255,0.22);
+  transform: translateY(-1px);
+}
+
+.toolbarBtn:active {
+  transform: translateY(0);
+}
+
+.toolbarBtn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+/* Copy button - icon only */
+.copyBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+.copyBtn:hover {
+  background: rgba(255,255,255,0.22);
+  transform: translateY(-1px);
+}
+
+.copyBtn:active {
+  transform: translateY(0);
+}
+
+.copyBtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* CSS Tooltip — shared for toolbarBtn and copyBtn */
+.copyBtn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.15s ease;
+  z-index: 200;
+}
+
+.copyBtn[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* CSS Tooltip */
+.toolbarBtn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.15s ease;
+  z-index: 200;
+}
+
+.toolbarBtn[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .title {
+    font-size: 15px;
+  }
+  .toolbar {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .toolbarBtn {
+    padding: 6px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  .toolbarBtn[data-tooltip]::after {
+    display: none;
+  }
+  .separator {
+    display: none;
+  }
+}

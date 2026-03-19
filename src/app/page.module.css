@@ -1,0 +1,136 @@
+.container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.editorPane {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #d4d4d4;
+}
+
+.resizeHandle {
+  width: 6px;
+  cursor: col-resize;
+  background: #e2e2e2;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.resizeHandle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 24px;
+  background: transparent;
+  border-radius: 1px;
+  transition: background 0.15s;
+  /* Grip dots pattern */
+  background-image: radial-gradient(circle, #999 1px, transparent 1px);
+  background-size: 2px 6px;
+  background-repeat: repeat-y;
+  opacity: 0;
+}
+
+.resizeHandle:hover::after,
+.resizeActive::after {
+  opacity: 1;
+}
+
+.resizeHandle:hover,
+.resizeActive {
+  background: #D4A843;
+}
+
+/* Drop overlay */
+@keyframes marchingAnts {
+  to { background-position: 100% 0, 0 100%, 0 0, 100% 100%; }
+}
+
+.dropOverlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(212,168,67,0.08);
+  z-index: 200;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+  border: 3px dashed #D4A843;
+  animation: marchingAnts 1s linear infinite;
+}
+
+.dropVisible {
+  display: flex;
+}
+
+.dropIcon {
+  width: 40px;
+  height: 40px;
+  color: #1B3D6D;
+  opacity: 0.6;
+}
+
+.dropTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1B3D6D;
+}
+
+.dropSubtitle {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Fullscreen mode */
+.fullscreen .editorPane,
+.fullscreen .resizeHandle {
+  display: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  .editorPane {
+    width: 100% !important;
+    border-right: none;
+    border-bottom: 1px solid #d4d4d4;
+  }
+  .resizeHandle {
+    display: none;
+  }
+  .mobilePreview .editorPane {
+    display: none;
+  }
+  .mobileEditor .previewPane {
+    display: none;
+  }
+  .mobileEditor .editorPane {
+    flex: 1;
+  }
+}
+
+/* Syntax highlighting classes (global because they're in innerHTML) */
+:global(.hl-keyword) { color: #7c3aed; font-weight: 600; }
+:global(.hl-arrow) { color: #0891b2; }
+:global(.hl-string) { color: #b45309; }
+:global(.hl-comment) { color: #9ca3af; font-style: italic; }
+:global(.hl-label) { color: #0d9488; }
+:global(.hl-style) { color: #db2777; }
+:global(.hl-error-line) {
+  background: rgba(220,38,38,0.08);
+  text-decoration: underline wavy #dc2626;
+  text-underline-offset: 3px;
+  display: inline-block;
+  width: 100%;
+}
