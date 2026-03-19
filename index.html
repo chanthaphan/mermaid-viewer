@@ -828,7 +828,7 @@
     a["Frontend"] b["API Gateway"] c["Backend"]
     d["React App"]:1 e["REST API"]:1 f["Node.js"]:1
     g["CDN"]:1 h["Load Balancer"]:1 i["Database"]:1`,
-      quadrant: `quadrant-beta
+      quadrant: `quadrantChart
     title Feature Priority Matrix
     x-axis Low Effort --> High Effort
     y-axis Low Impact --> High Impact
@@ -842,23 +842,27 @@
     Feature D: [0.8, 0.2]
     Feature E: [0.5, 0.6]`,
       requirement: `requirementDiagram
-    requirement user_auth {
-        id: REQ-001
-        text: Users must authenticate
-        risk: high
-        verifymethod: test
-    }
-    requirement session_mgmt {
-        id: REQ-002
-        text: Sessions expire after 30min
-        risk: medium
-        verifymethod: inspection
-    }
-    element web_app {
-        type: application
-    }
-    web_app - satisfies -> user_auth
-    web_app - satisfies -> session_mgmt`,
+
+requirement user_auth {
+id: 1
+text: Users must authenticate.
+risk: high
+verifymethod: test
+}
+
+requirement session_mgmt {
+id: 2
+text: Sessions expire after 30 minutes.
+risk: medium
+verifymethod: inspection
+}
+
+element web_app {
+type: simulation
+}
+
+web_app - satisfies -> user_auth
+web_app - satisfies -> session_mgmt`,
       kanban: `kanban
     Todo
         Design homepage
