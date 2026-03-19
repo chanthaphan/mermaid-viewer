@@ -6,61 +6,61 @@
   <title>Mermaid Viewer</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, sans-serif; height: 100vh; display: flex; flex-direction: column; background: #1e1e2e; color: #cdd6f4; }
-    header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: #181825; border-bottom: 1px solid #313244; }
+    body { font-family: system-ui, -apple-system, sans-serif; height: 100vh; display: flex; flex-direction: column; background: #f0f4f8; color: #1e293b; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: #1B3D6D; border-bottom: 1px solid #152e54; color: #fff; }
     header h1 { font-size: 18px; font-weight: 600; }
     .toolbar { display: flex; gap: 8px; }
     .toolbar button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.15s; }
     .save-group { position: relative; display: flex; }
-    #save-btn { background: #a6e3a1; color: #1e1e2e; border-radius: 6px 0 0 6px !important; }
-    #save-btn:hover { background: #94e295; }
-    #save-dropdown-btn { background: #a6e3a1; color: #1e1e2e; border-radius: 0 6px 6px 0 !important; padding: 8px 6px !important; border-left: 1px solid rgba(0,0,0,0.15) !important; }
-    #save-dropdown-btn:hover { background: #94e295; }
-    .save-menu { display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; background: #1e1e2e; border: 1px solid #45475a; border-radius: 8px; overflow: hidden; z-index: 100; min-width: 140px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    #save-btn { background: #D4A843; color: #1B3D6D; border-radius: 6px 0 0 6px !important; font-weight: 600; }
+    #save-btn:hover { background: #c9993a; }
+    #save-dropdown-btn { background: #D4A843; color: #1B3D6D; border-radius: 0 6px 6px 0 !important; padding: 8px 6px !important; border-left: 1px solid rgba(0,0,0,0.15) !important; }
+    #save-dropdown-btn:hover { background: #c9993a; }
+    .save-menu { display: none; position: absolute; top: 100%; right: 0; margin-top: 4px; background: #fff; border: 1px solid #d4d4d4; border-radius: 8px; overflow: hidden; z-index: 100; min-width: 140px; box-shadow: 0 8px 24px rgba(27,61,109,0.2); }
     .save-menu.open { display: block; }
-    .save-menu button { display: block; width: 100%; padding: 8px 14px; border: none; background: none; color: #cdd6f4; font-size: 13px; text-align: left; cursor: pointer; }
-    .save-menu button:hover { background: #313244; }
-    #theme-btn { background: #313244; color: #cdd6f4; }
-    #theme-btn:hover { background: #45475a; }
-    .settings-panel { display: none; position: absolute; top: 48px; right: 12px; background: #1e1e2e; border: 1px solid #45475a; border-radius: 10px; padding: 16px; z-index: 100; width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .save-menu button { display: block; width: 100%; padding: 8px 14px; border: none; background: none; color: #1e293b; font-size: 13px; text-align: left; cursor: pointer; }
+    .save-menu button:hover { background: #f0ead6; }
+    #theme-btn { background: rgba(255,255,255,0.2); color: #fff; }
+    #theme-btn:hover { background: rgba(255,255,255,0.3); }
+    .settings-panel { display: none; position: absolute; top: 48px; right: 12px; background: #fff; border: 1px solid #d4d4d4; border-radius: 10px; padding: 16px; z-index: 100; width: 280px; box-shadow: 0 8px 32px rgba(27,61,109,0.2); }
     .settings-panel.open { display: block; }
-    .settings-panel h3 { font-size: 13px; font-weight: 600; color: #a6adc8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-    .settings-panel h3:not(:first-child) { margin-top: 14px; border-top: 1px solid #313244; padding-top: 12px; }
+    .settings-panel h3 { font-size: 13px; font-weight: 600; color: #1B3D6D; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .settings-panel h3:not(:first-child) { margin-top: 14px; border-top: 1px solid #e8e8e8; padding-top: 12px; }
     .color-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .color-row label { font-size: 13px; color: #cdd6f4; }
-    .color-row input[type="color"] { width: 36px; height: 28px; border: 1px solid #45475a; border-radius: 4px; background: none; cursor: pointer; padding: 0; }
+    .color-row label { font-size: 13px; color: #334155; }
+    .color-row input[type="color"] { width: 36px; height: 28px; border: 1px solid #d4d4d4; border-radius: 4px; background: none; cursor: pointer; padding: 0; }
     .color-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
     .color-row input[type="color"]::-webkit-color-swatch { border: none; border-radius: 2px; }
     .preset-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
     .preset-btn { width: 28px; height: 28px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: border-color 0.15s; }
-    .preset-btn:hover, .preset-btn.active { border-color: #89b4fa; }
+    .preset-btn:hover, .preset-btn.active { border-color: #D4A843; }
     .size-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .size-row label { font-size: 13px; color: #cdd6f4; flex-shrink: 0; }
-    .size-row input[type="range"] { flex: 1; accent-color: #89b4fa; }
-    .size-row span { font-size: 12px; color: #a6adc8; min-width: 32px; text-align: right; }
+    .size-row label { font-size: 13px; color: #334155; flex-shrink: 0; }
+    .size-row input[type="range"] { flex: 1; accent-color: #1B3D6D; }
+    .size-row span { font-size: 12px; color: #64748b; min-width: 32px; text-align: right; }
     /* Examples dropdown */
     .examples-group { position: relative; }
-    .examples-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: #1e1e2e; border: 1px solid #45475a; border-radius: 8px; overflow: hidden; z-index: 100; min-width: 180px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); max-height: 300px; overflow-y: auto; }
+    .examples-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: #fff; border: 1px solid #d4d4d4; border-radius: 8px; overflow: hidden; z-index: 100; min-width: 180px; box-shadow: 0 8px 24px rgba(27,61,109,0.2); max-height: 300px; overflow-y: auto; }
     .examples-menu.open { display: block; }
-    .examples-menu button { display: block; width: 100%; padding: 8px 14px; border: none; background: none; color: #cdd6f4; font-size: 13px; text-align: left; cursor: pointer; }
-    .examples-menu button:hover { background: #313244; }
-    #examples-btn { background: #89b4fa; color: #1e1e2e; }
-    #examples-btn:hover { background: #74a8fc; }
+    .examples-menu button { display: block; width: 100%; padding: 8px 14px; border: none; background: none; color: #1e293b; font-size: 13px; text-align: left; cursor: pointer; }
+    .examples-menu button:hover { background: #f0ead6; }
+    #examples-btn { background: rgba(255,255,255,0.2); color: #fff; }
+    #examples-btn:hover { background: rgba(255,255,255,0.3); }
     /* Fullscreen */
     .container.fullscreen .editor-pane, .container.fullscreen .resize-handle { display: none; }
-    #fullscreen-btn { background: #313244; color: #cdd6f4; }
-    #fullscreen-btn:hover { background: #45475a; }
+    #fullscreen-btn { background: rgba(255,255,255,0.2); color: #fff; }
+    #fullscreen-btn:hover { background: rgba(255,255,255,0.3); }
     /* Drop overlay */
-    .drop-overlay { display: none; position: absolute; inset: 0; background: rgba(137,180,250,0.15); border: 3px dashed #89b4fa; z-index: 200; align-items: center; justify-content: center; font-size: 18px; color: #89b4fa; pointer-events: none; }
+    .drop-overlay { display: none; position: absolute; inset: 0; background: rgba(212,168,67,0.1); border: 3px dashed #D4A843; z-index: 200; align-items: center; justify-content: center; font-size: 18px; color: #1B3D6D; pointer-events: none; }
     .drop-overlay.visible { display: flex; }
     /* Shortcuts hint */
     .shortcuts-hint { position: absolute; bottom: 12px; left: 12px; font-size: 11px; color: #585b70; z-index: 10; }
     .container { display: flex; flex: 1; overflow: hidden; position: relative; }
-    .editor-pane { width: 40%; display: flex; flex-direction: column; border-right: 1px solid #313244; }
+    .editor-pane { width: 40%; display: flex; flex-direction: column; border-right: 1px solid #d4d4d4; }
     .editor-wrap { flex: 1; display: flex; overflow: hidden; position: relative; }
-    .line-numbers { padding: 16px 12px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #181825; color: #585b70; text-align: right; user-select: none; overflow: hidden; min-width: 48px; border-right: 1px solid #313244; }
+    .line-numbers { padding: 16px 12px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #f0ead6; color: #1B3D6D; text-align: right; user-select: none; overflow: hidden; min-width: 48px; border-right: 1px solid #d4d4d4; }
     .line-numbers span { display: block; }
-    .editor-pane textarea { flex: 1; resize: none; border: none; outline: none; padding: 16px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #1e1e2e; color: #cdd6f4; tab-size: 2; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+    .editor-pane textarea { flex: 1; resize: none; border: none; outline: none; padding: 16px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #f8fafc; color: #1e293b; tab-size: 2; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
     .preview-pane { flex: 1; overflow: hidden; position: relative; background: #ffffff; cursor: grab; }
     .preview-pane.grabbing { cursor: grabbing; }
     .preview-pane.dark { background: #1e1e2e; }
@@ -73,9 +73,9 @@
     .preview-pane.dark .zoom-controls button:hover { background: #45475a; }
     .zoom-label { font-size: 12px; color: #666; min-width: 42px; text-align: center; font-family: system-ui, sans-serif; }
     .preview-pane.dark .zoom-label { color: #a6adc8; }
-    #error { color: #f38ba8; padding: 12px 16px; font-size: 13px; font-family: monospace; background: #1e1e2e; border-top: 1px solid #313244; display: none; max-height: 80px; overflow: auto; }
-    .resize-handle { width: 4px; cursor: col-resize; background: #313244; transition: background 0.15s; }
-    .resize-handle:hover, .resize-handle.active { background: #89b4fa; }
+    #error { color: #dc2626; padding: 12px 16px; font-size: 13px; font-family: monospace; background: #fef2f2; border-top: 1px solid #fecaca; display: none; max-height: 80px; overflow: auto; }
+    .resize-handle { width: 4px; cursor: col-resize; background: #d4d4d4; transition: background 0.15s; }
+    .resize-handle:hover, .resize-handle.active { background: #D4A843; }
   </style>
 </head>
 <body>
@@ -297,81 +297,45 @@
       let w = 800, h = 600;
       if (vb) {
         const parts = vb.split(/\s+/).map(Number);
-        w = parts[2]; h = parts[3];
+        w = Math.ceil(parts[2]); h = Math.ceil(parts[3]);
       }
-      // Use an offscreen iframe to render SVG with foreignObject support
-      const iframe = document.createElement('iframe');
-      iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:' + w + 'px;height:' + h + 'px;border:none;';
-      document.body.appendChild(iframe);
-      iframe.onload = () => {
-        const doc = iframe.contentDocument;
-        doc.open();
-        doc.write('<!DOCTYPE html><html><head><style>body{margin:0;overflow:hidden;background:transparent;}</style></head><body>' + info.svgData + '</body></html>');
-        doc.close();
-        // Wait for rendering
-        setTimeout(() => {
-          try {
-            const s = 2;
-            const canvas = document.createElement('canvas');
-            canvas.width = w * s;
-            canvas.height = h * s;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = previewPane.style.background || '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // Draw SVG via foreignObject in a canvas-friendly way
-            const svgForCanvas = doc.querySelector('svg');
-            const data = new XMLSerializer().serializeToString(svgForCanvas);
-            const blob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const img = new Image();
-            img.onload = () => {
-              ctx.scale(s, s);
-              ctx.drawImage(img, 0, 0, w, h);
-              URL.revokeObjectURL(url);
-              document.body.removeChild(iframe);
-              callback(canvas);
-            };
-            img.onerror = () => {
-              // Fallback: use html2canvas-style approach via foreignObject in SVG
-              URL.revokeObjectURL(url);
-              const svgNS = 'http://www.w3.org/2000/svg';
-              const foSvg = document.createElementNS(svgNS, 'svg');
-              foSvg.setAttribute('xmlns', svgNS);
-              foSvg.setAttribute('width', w);
-              foSvg.setAttribute('height', h);
-              const fo = document.createElementNS(svgNS, 'foreignObject');
-              fo.setAttribute('width', '100%');
-              fo.setAttribute('height', '100%');
-              fo.innerHTML = doc.documentElement.outerHTML;
-              foSvg.appendChild(fo);
-              const foData = new XMLSerializer().serializeToString(foSvg);
-              const foBlob = new Blob([foData], { type: 'image/svg+xml;charset=utf-8' });
-              const foUrl = URL.createObjectURL(foBlob);
-              const img2 = new Image();
-              img2.onload = () => {
-                ctx.scale(s, s);
-                ctx.drawImage(img2, 0, 0, w, h);
-                URL.revokeObjectURL(foUrl);
-                document.body.removeChild(iframe);
-                callback(canvas);
-              };
-              img2.onerror = () => {
-                // Final fallback: prompt user to use SVG export
-                URL.revokeObjectURL(foUrl);
-                document.body.removeChild(iframe);
-                alert('Raster export failed for this diagram. Please use "Save as SVG" instead, or use a simpler diagram.');
-              };
-              img2.src = foUrl;
-            };
-            img.src = url;
-          } catch (e) {
-            document.body.removeChild(iframe);
-            alert('Export failed: ' + e.message);
-          }
-        }, 200);
+      const s = 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = w * s;
+      canvas.height = h * s;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = previewPane.style.background || '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Build a clean SVG data URL with explicit xmlns and dimensions
+      let svgStr = info.svgData;
+      if (!svgStr.includes('xmlns=')) {
+        svgStr = svgStr.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        ctx.scale(s, s);
+        ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        callback(canvas);
       };
-      // Trigger load
-      iframe.src = 'about:blank';
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        // Fallback: try data URL approach
+        const dataUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
+        const img2 = new Image();
+        img2.onload = () => {
+          ctx.scale(s, s);
+          ctx.drawImage(img2, 0, 0, w, h);
+          callback(canvas);
+        };
+        img2.onerror = () => {
+          alert('Raster export failed for this diagram. Please use "Save as SVG" instead.');
+        };
+        img2.src = dataUrl;
+      };
+      img.src = url;
     }
 
     function download(blob, name) {
