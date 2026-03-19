@@ -119,6 +119,7 @@
           <button data-type="zenuml">ZenUML</button>
           <button data-type="swimlane">Swimlane Flowchart</button>
           <button data-type="ganttAdvanced">Gantt (Advanced)</button>
+          <button data-type="zenumlTryCatch">ZenUML (Try/Catch)</button>
         </div>
       </div>
       <button id="fullscreen-btn" title="Toggle fullscreen preview (F11)">Fullscreen</button>
@@ -1065,6 +1066,15 @@ web_app - satisfies -> session_mgmt`,
         I --> J[Deliver to Customer]
     end
     F --> A`,
+      zenumlTryCatch: `zenuml
+    try {
+      Consumer->API: Book something
+      API->BookingService: Start booking process
+    } catch {
+      API->Consumer: show failure
+    } finally {
+      API->BookingService: rollback status
+    }`,
       ganttAdvanced: `gantt
     dateFormat  YYYY-MM-DD
     title       Adding GANTT diagram functionality to mermaid
