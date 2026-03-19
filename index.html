@@ -38,6 +38,9 @@
     .size-row label { font-size: 13px; color: #334155; flex-shrink: 0; }
     .size-row input[type="range"] { flex: 1; accent-color: #1B3D6D; }
     .size-row span { font-size: 12px; color: #64748b; min-width: 32px; text-align: right; }
+    .font-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .font-row label { font-size: 13px; color: #334155; }
+    .font-row select { padding: 4px 8px; border: 1px solid #d4d4d4; border-radius: 4px; font-size: 12px; background: #fff; color: #1e293b; cursor: pointer; max-width: 140px; }
     /* Examples dropdown */
     .examples-group { position: relative; }
     .examples-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: #fff; border: 1px solid #d4d4d4; border-radius: 8px; overflow: hidden; z-index: 100; min-width: 180px; box-shadow: 0 8px 24px rgba(27,61,109,0.2); max-height: 300px; overflow-y: auto; }
@@ -179,6 +182,31 @@
       <label>Diagram</label>
       <input type="range" id="diagram-font-size" min="10" max="24" value="16">
       <span id="diagram-font-label">16px</span>
+    </div>
+    <h3>Font Family</h3>
+    <div class="font-row">
+      <label>Editor</label>
+      <select id="editor-font-family">
+        <option value="'Cascadia Code', 'Fira Code', 'Consolas', monospace">Monospace</option>
+        <option value="system-ui, -apple-system, sans-serif">System UI</option>
+        <option value="'Segoe UI', Tahoma, Geneva, sans-serif">Segoe UI</option>
+        <option value="'Courier New', Courier, monospace">Courier New</option>
+        <option value="Georgia, 'Times New Roman', serif">Serif</option>
+        <option value="'Comic Sans MS', cursive">Comic Sans</option>
+      </select>
+    </div>
+    <div class="font-row">
+      <label>Diagram</label>
+      <select id="diagram-font-family">
+        <option value="system-ui, sans-serif">System UI</option>
+        <option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option>
+        <option value="Arial, Helvetica, sans-serif">Arial</option>
+        <option value="'Times New Roman', serif">Times New Roman</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="'Courier New', monospace">Courier New</option>
+        <option value="Verdana, sans-serif">Verdana</option>
+        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+      </select>
     </div>
     <h3>Mermaid Theme</h3>
     <div class="preset-row" id="theme-presets">
@@ -539,7 +567,10 @@
 
     function reInitMermaid() {
       const fontSize = diagramFontSize.value + 'px';
+      const fontFamily = diagramFontFamily ? diagramFontFamily.value : 'system-ui, sans-serif';
+      const commonVars = { fontSize: fontSize, fontFamily: fontFamily };
       const themeVars = currentMermaidTheme === 'base' ? {
+        ...commonVars,
         primaryColor: clrPrimary.value,
         secondaryColor: clrSecondary.value,
         tertiaryColor: clrTertiary.value,
@@ -547,8 +578,7 @@
         primaryTextColor: clrText.value,
         lineColor: clrLine.value,
         primaryBorderColor: clrLine.value,
-        fontSize: fontSize,
-      } : { fontSize: fontSize };
+      } : commonVars;
       mermaid.initialize({
         startOnLoad: false,
         theme: currentMermaidTheme === 'base' ? 'base' : currentMermaidTheme,
@@ -583,6 +613,18 @@
     diagramFontSize.addEventListener('input', () => {
       const size = diagramFontSize.value;
       diagramFontLabel.textContent = size + 'px';
+      reInitMermaid();
+    });
+
+    // Font family controls
+    const editorFontFamily = document.getElementById('editor-font-family');
+    const diagramFontFamily = document.getElementById('diagram-font-family');
+
+    editorFontFamily.addEventListener('change', () => {
+      code.style.fontFamily = editorFontFamily.value;
+      document.querySelector('.line-numbers').style.fontFamily = editorFontFamily.value;
+    });
+    diagramFontFamily.addEventListener('change', () => {
       reInitMermaid();
     });
 
@@ -1134,6 +1176,8 @@ web_app - satisfies -> session_mgmt`,
         clrBackground: clrBackground.value,
         clrText: clrText.value,
         clrLine: clrLine.value,
+        editorFontFamily: editorFontFamily.value,
+        diagramFontFamily: diagramFontFamily.value,
       };
       try { localStorage.setItem('mermaid-viewer-state', JSON.stringify(state)); } catch(e) {}
     }
@@ -1152,6 +1196,8 @@ web_app - satisfies -> session_mgmt`,
         if (s.clrBackground) clrBackground.value = s.clrBackground;
         if (s.clrText) clrText.value = s.clrText;
         if (s.clrLine) clrLine.value = s.clrLine;
+        if (s.editorFontFamily) { editorFontFamily.value = s.editorFontFamily; code.style.fontFamily = s.editorFontFamily; document.querySelector('.line-numbers').style.fontFamily = s.editorFontFamily; }
+        if (s.diagramFontFamily) { diagramFontFamily.value = s.diagramFontFamily; }
         if (s.theme) {
           currentMermaidTheme = s.theme;
           document.querySelectorAll('#theme-presets .preset-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === s.theme));
@@ -1160,7 +1206,7 @@ web_app - satisfies -> session_mgmt`,
     }
     // Auto-save on changes
     code.addEventListener('input', saveState);
-    [bgColorInput, clrPrimary, clrSecondary, clrTertiary, clrBackground, clrText, clrLine, editorFontSize, diagramFontSize].forEach(el => el.addEventListener('change', saveState));
+    [bgColorInput, clrPrimary, clrSecondary, clrTertiary, clrBackground, clrText, clrLine, editorFontSize, diagramFontSize, editorFontFamily, diagramFontFamily].forEach(el => el.addEventListener('change', saveState));
     bgPresets.forEach(b => b.addEventListener('click', () => setTimeout(saveState, 50)));
     document.querySelectorAll('#theme-presets .preset-btn').forEach(b => b.addEventListener('click', () => setTimeout(saveState, 50)));
 
