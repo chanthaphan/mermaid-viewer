@@ -38,7 +38,24 @@
     .size-row label { font-size: 13px; color: #cdd6f4; flex-shrink: 0; }
     .size-row input[type="range"] { flex: 1; accent-color: #89b4fa; }
     .size-row span { font-size: 12px; color: #a6adc8; min-width: 32px; text-align: right; }
-    .container { display: flex; flex: 1; overflow: hidden; }
+    /* Examples dropdown */
+    .examples-group { position: relative; }
+    .examples-menu { display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: #1e1e2e; border: 1px solid #45475a; border-radius: 8px; overflow: hidden; z-index: 100; min-width: 180px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); max-height: 300px; overflow-y: auto; }
+    .examples-menu.open { display: block; }
+    .examples-menu button { display: block; width: 100%; padding: 8px 14px; border: none; background: none; color: #cdd6f4; font-size: 13px; text-align: left; cursor: pointer; }
+    .examples-menu button:hover { background: #313244; }
+    #examples-btn { background: #89b4fa; color: #1e1e2e; }
+    #examples-btn:hover { background: #74a8fc; }
+    /* Fullscreen */
+    .container.fullscreen .editor-pane, .container.fullscreen .resize-handle { display: none; }
+    #fullscreen-btn { background: #313244; color: #cdd6f4; }
+    #fullscreen-btn:hover { background: #45475a; }
+    /* Drop overlay */
+    .drop-overlay { display: none; position: absolute; inset: 0; background: rgba(137,180,250,0.15); border: 3px dashed #89b4fa; z-index: 200; align-items: center; justify-content: center; font-size: 18px; color: #89b4fa; pointer-events: none; }
+    .drop-overlay.visible { display: flex; }
+    /* Shortcuts hint */
+    .shortcuts-hint { position: absolute; bottom: 12px; left: 12px; font-size: 11px; color: #585b70; z-index: 10; }
+    .container { display: flex; flex: 1; overflow: hidden; position: relative; }
     .editor-pane { width: 40%; display: flex; flex-direction: column; border-right: 1px solid #313244; }
     .editor-wrap { flex: 1; display: flex; overflow: hidden; position: relative; }
     .line-numbers { padding: 16px 12px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #181825; color: #585b70; text-align: right; user-select: none; overflow: hidden; min-width: 48px; border-right: 1px solid #313244; }
@@ -65,6 +82,22 @@
   <header>
     <h1>Mermaid Viewer</h1>
     <div class="toolbar">
+      <div class="examples-group">
+        <button id="examples-btn" title="Insert example diagram">Examples</button>
+        <div class="examples-menu" id="examples-menu">
+          <button data-type="flowchart">Flowchart</button>
+          <button data-type="sequence">Sequence Diagram</button>
+          <button data-type="class">Class Diagram</button>
+          <button data-type="er">ER Diagram</button>
+          <button data-type="gantt">Gantt Chart</button>
+          <button data-type="pie">Pie Chart</button>
+          <button data-type="state">State Diagram</button>
+          <button data-type="journey">User Journey</button>
+          <button data-type="mindmap">Mindmap</button>
+          <button data-type="gitgraph">Git Graph</button>
+        </div>
+      </div>
+      <button id="fullscreen-btn" title="Toggle fullscreen preview (F11)">Fullscreen</button>
       <button id="theme-btn" title="Colors & Background">Colors</button>
       <div class="save-group">
         <button id="save-btn" title="Export as PNG">Save PNG</button>
@@ -137,7 +170,8 @@
       <button class="preset-btn" data-theme="base" style="background:linear-gradient(135deg,#f4f4f4,#cde)" title="Base (custom)"></button>
     </div>
   </div>
-  <div class="container">
+  <div class="container" id="main-container">
+    <div class="drop-overlay" id="drop-overlay">Drop .mmd file to load</div>
     <div class="editor-pane">
       <div class="editor-wrap">
         <div class="line-numbers" id="line-numbers"></div>
@@ -239,32 +273,105 @@
     });
 
     // Export functions
-    function getSvgDataUrl() {
+    function getSvgInfo() {
       const svgEl = preview.querySelector('svg');
       if (!svgEl) return null;
-      const svgData = new XMLSerializer().serializeToString(svgEl);
-      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      return { url: URL.createObjectURL(blob), svgData, svgEl };
+      // Clone and fix dimensions for export
+      const clone = svgEl.cloneNode(true);
+      const vb = clone.getAttribute('viewBox');
+      if (vb) {
+        const [,, w, h] = vb.split(/\s+/).map(Number);
+        clone.setAttribute('width', w);
+        clone.setAttribute('height', h);
+        clone.removeAttribute('style');
+      }
+      const svgData = new XMLSerializer().serializeToString(clone);
+      return { svgData, svgEl };
     }
 
     function exportToCanvas(callback) {
-      const info = getSvgDataUrl();
+      const info = getSvgInfo();
       if (!info) return;
-      const img = new Image();
-      img.onload = () => {
-        const s = 2;
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth * s;
-        canvas.height = img.naturalHeight * s;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = previewPane.style.background || '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.scale(s, s);
-        ctx.drawImage(img, 0, 0);
-        URL.revokeObjectURL(info.url);
-        callback(canvas);
+      const svgEl = info.svgEl;
+      const vb = svgEl.getAttribute('viewBox');
+      let w = 800, h = 600;
+      if (vb) {
+        const parts = vb.split(/\s+/).map(Number);
+        w = parts[2]; h = parts[3];
+      }
+      // Use an offscreen iframe to render SVG with foreignObject support
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:' + w + 'px;height:' + h + 'px;border:none;';
+      document.body.appendChild(iframe);
+      iframe.onload = () => {
+        const doc = iframe.contentDocument;
+        doc.open();
+        doc.write('<!DOCTYPE html><html><head><style>body{margin:0;overflow:hidden;background:transparent;}</style></head><body>' + info.svgData + '</body></html>');
+        doc.close();
+        // Wait for rendering
+        setTimeout(() => {
+          try {
+            const s = 2;
+            const canvas = document.createElement('canvas');
+            canvas.width = w * s;
+            canvas.height = h * s;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = previewPane.style.background || '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Draw SVG via foreignObject in a canvas-friendly way
+            const svgForCanvas = doc.querySelector('svg');
+            const data = new XMLSerializer().serializeToString(svgForCanvas);
+            const blob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            img.onload = () => {
+              ctx.scale(s, s);
+              ctx.drawImage(img, 0, 0, w, h);
+              URL.revokeObjectURL(url);
+              document.body.removeChild(iframe);
+              callback(canvas);
+            };
+            img.onerror = () => {
+              // Fallback: use html2canvas-style approach via foreignObject in SVG
+              URL.revokeObjectURL(url);
+              const svgNS = 'http://www.w3.org/2000/svg';
+              const foSvg = document.createElementNS(svgNS, 'svg');
+              foSvg.setAttribute('xmlns', svgNS);
+              foSvg.setAttribute('width', w);
+              foSvg.setAttribute('height', h);
+              const fo = document.createElementNS(svgNS, 'foreignObject');
+              fo.setAttribute('width', '100%');
+              fo.setAttribute('height', '100%');
+              fo.innerHTML = doc.documentElement.outerHTML;
+              foSvg.appendChild(fo);
+              const foData = new XMLSerializer().serializeToString(foSvg);
+              const foBlob = new Blob([foData], { type: 'image/svg+xml;charset=utf-8' });
+              const foUrl = URL.createObjectURL(foBlob);
+              const img2 = new Image();
+              img2.onload = () => {
+                ctx.scale(s, s);
+                ctx.drawImage(img2, 0, 0, w, h);
+                URL.revokeObjectURL(foUrl);
+                document.body.removeChild(iframe);
+                callback(canvas);
+              };
+              img2.onerror = () => {
+                // Final fallback: prompt user to use SVG export
+                URL.revokeObjectURL(foUrl);
+                document.body.removeChild(iframe);
+                alert('Raster export failed for this diagram. Please use "Save as SVG" instead, or use a simpler diagram.');
+              };
+              img2.src = foUrl;
+            };
+            img.src = url;
+          } catch (e) {
+            document.body.removeChild(iframe);
+            alert('Export failed: ' + e.message);
+          }
+        }, 200);
       };
-      img.src = info.url;
+      // Trigger load
+      iframe.src = 'about:blank';
     }
 
     function download(blob, name) {
@@ -277,10 +384,9 @@
 
     function exportAs(format) {
       if (format === 'svg') {
-        const info = getSvgDataUrl();
+        const info = getSvgInfo();
         if (!info) return;
         download(new Blob([info.svgData], { type: 'image/svg+xml' }), 'mermaid-diagram.svg');
-        URL.revokeObjectURL(info.url);
       } else if (format === 'png') {
         exportToCanvas(canvas => canvas.toBlob(b => download(b, 'mermaid-diagram.png'), 'image/png'));
       } else if (format === 'jpg') {
@@ -587,6 +693,226 @@
         document.body.style.userSelect = '';
       }
     });
+
+    // Examples dropdown
+    const EXAMPLES = {
+      flowchart: `graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Process A]
+    B -->|No| D[Process B]
+    C --> E[End]
+    D --> E`,
+      sequence: `sequenceDiagram
+    participant Alice
+    participant Bob
+    Alice->>John: Hello John
+    John-->>Alice: Hi Alice
+    Alice->>Bob: How are you?
+    Bob-->>Alice: Great!`,
+      class: `classDiagram
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Animal : +int age
+    Animal : +String gender
+    Animal: +isMammal()
+    Duck : +String beakColor
+    Duck : +swim()
+    Fish : +int sizeInFeet
+    Fish : +canEat()`,
+      er: `erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+    CUSTOMER {
+        string name
+        string email
+    }
+    ORDER {
+        int orderNumber
+        string deliveryAddress
+    }`,
+      gantt: `gantt
+    title Project Schedule
+    dateFormat YYYY-MM-DD
+    section Design
+        Wireframes     :a1, 2024-01-01, 7d
+        Mockups        :a2, after a1, 5d
+    section Development
+        Frontend       :b1, after a2, 14d
+        Backend        :b2, after a2, 14d
+    section Testing
+        QA Testing     :c1, after b1, 7d`,
+      pie: `pie title Favorite Pets
+    "Dogs" : 45
+    "Cats" : 30
+    "Birds" : 15
+    "Fish" : 10`,
+      state: `stateDiagram-v2
+    [*] --> Idle
+    Idle --> Processing : Submit
+    Processing --> Success : Done
+    Processing --> Error : Fail
+    Error --> Idle : Retry
+    Success --> [*]`,
+      journey: `journey
+    title My Working Day
+    section Go to work
+        Make tea: 5: Me
+        Go upstairs: 3: Me
+        Do work: 1: Me, Cat
+    section Go home
+        Go downstairs: 5: Me
+        Sit down: 5: Me`,
+      mindmap: `mindmap
+  root((Project))
+    Design
+      UI/UX
+      Branding
+    Development
+      Frontend
+      Backend
+      Database
+    Testing
+      Unit Tests
+      Integration`,
+      gitgraph: `gitGraph
+    commit
+    commit
+    branch develop
+    checkout develop
+    commit
+    commit
+    checkout main
+    merge develop
+    commit`,
+    };
+    const examplesMenu = document.getElementById('examples-menu');
+    document.getElementById('examples-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      examplesMenu.classList.toggle('open');
+    });
+    document.addEventListener('click', () => examplesMenu.classList.remove('open'));
+    examplesMenu.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        code.value = EXAMPLES[btn.dataset.type];
+        code.dispatchEvent(new Event('input'));
+        examplesMenu.classList.remove('open');
+      });
+    });
+
+    // Fullscreen preview toggle
+    const mainContainer = document.getElementById('main-container');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    fullscreenBtn.addEventListener('click', () => {
+      mainContainer.classList.toggle('fullscreen');
+      fullscreenBtn.textContent = mainContainer.classList.contains('fullscreen') ? 'Editor' : 'Fullscreen';
+      requestAnimationFrame(fitToView);
+    });
+
+    // Drag-and-drop .mmd file import
+    const dropOverlay = document.getElementById('drop-overlay');
+    let dragCounter = 0;
+    document.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      dragCounter++;
+      dropOverlay.classList.add('visible');
+    });
+    document.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter <= 0) { dragCounter = 0; dropOverlay.classList.remove('visible'); }
+    });
+    document.addEventListener('dragover', (e) => e.preventDefault());
+    document.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dragCounter = 0;
+      dropOverlay.classList.remove('visible');
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          code.value = ev.target.result;
+          code.dispatchEvent(new Event('input'));
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ctrl+S — save PNG
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        exportAs('png');
+      }
+      // Ctrl+Shift+F — fit to view
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
+        e.preventDefault();
+        fitToView();
+      }
+      // Ctrl+= / Ctrl+- — zoom
+      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+        e.preventDefault();
+        document.getElementById('zoom-in').click();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+        e.preventDefault();
+        document.getElementById('zoom-out').click();
+      }
+      // F11 — fullscreen
+      if (e.key === 'F11') {
+        e.preventDefault();
+        fullscreenBtn.click();
+      }
+    });
+
+    // LocalStorage persistence
+    function saveState() {
+      const state = {
+        code: code.value,
+        theme: currentMermaidTheme,
+        bgColor: previewPane.style.background || '#ffffff',
+        editorFontSize: editorFontSize.value,
+        diagramFontSize: diagramFontSize.value,
+        clrPrimary: clrPrimary.value,
+        clrSecondary: clrSecondary.value,
+        clrTertiary: clrTertiary.value,
+        clrBackground: clrBackground.value,
+        clrText: clrText.value,
+        clrLine: clrLine.value,
+      };
+      try { localStorage.setItem('mermaid-viewer-state', JSON.stringify(state)); } catch(e) {}
+    }
+    function loadState() {
+      try {
+        const raw = localStorage.getItem('mermaid-viewer-state');
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        if (s.code) code.value = s.code;
+        if (s.bgColor) { previewPane.style.background = s.bgColor; bgColorInput.value = s.bgColor; }
+        if (s.editorFontSize) { editorFontSize.value = s.editorFontSize; editorFontLabel.textContent = s.editorFontSize + 'px'; code.style.fontSize = s.editorFontSize + 'px'; document.querySelector('.line-numbers').style.fontSize = s.editorFontSize + 'px'; }
+        if (s.diagramFontSize) { diagramFontSize.value = s.diagramFontSize; diagramFontLabel.textContent = s.diagramFontSize + 'px'; }
+        if (s.clrPrimary) clrPrimary.value = s.clrPrimary;
+        if (s.clrSecondary) clrSecondary.value = s.clrSecondary;
+        if (s.clrTertiary) clrTertiary.value = s.clrTertiary;
+        if (s.clrBackground) clrBackground.value = s.clrBackground;
+        if (s.clrText) clrText.value = s.clrText;
+        if (s.clrLine) clrLine.value = s.clrLine;
+        if (s.theme) {
+          currentMermaidTheme = s.theme;
+          document.querySelectorAll('#theme-presets .preset-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === s.theme));
+        }
+      } catch(e) {}
+    }
+    // Auto-save on changes
+    code.addEventListener('input', saveState);
+    [bgColorInput, clrPrimary, clrSecondary, clrTertiary, clrBackground, clrText, clrLine, editorFontSize, diagramFontSize].forEach(el => el.addEventListener('change', saveState));
+    bgPresets.forEach(b => b.addEventListener('click', () => setTimeout(saveState, 50)));
+    document.querySelectorAll('#theme-presets .preset-btn').forEach(b => b.addEventListener('click', () => setTimeout(saveState, 50)));
+
+    // Load saved state
+    loadState();
 
     // Initial render
     updateLineNumbers();
