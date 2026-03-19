@@ -216,37 +216,14 @@
       <label>Lines</label>
       <input type="color" id="clr-line" value="#333333">
     </div>
-    <h3>Text Size</h3>
+    <h3>Diagram Font</h3>
     <div class="size-row">
-      <label>Editor</label>
-      <input type="range" id="editor-font-size" min="10" max="24" value="14">
-      <span id="editor-font-label">14px</span>
-    </div>
-    <div class="size-row">
-      <label>Diagram</label>
-      <input type="range" id="diagram-font-size" min="10" max="24" value="16">
+      <label>Size</label>
+      <input type="range" id="diagram-font-size" min="10" max="30" value="16">
       <span id="diagram-font-label">16px</span>
     </div>
-    <h3>Font Family</h3>
     <div class="font-row">
-      <label>Editor</label>
-      <select id="editor-font-family">
-        <option value="'Cascadia Code', 'Fira Code', 'Consolas', monospace">Monospace</option>
-        <option value="system-ui, -apple-system, sans-serif">System UI</option>
-        <option value="'Segoe UI', Tahoma, Geneva, sans-serif">Segoe UI</option>
-        <option value="'Courier New', Courier, monospace">Courier New</option>
-        <option value="Georgia, 'Times New Roman', serif">Serif</option>
-        <option value="'Comic Sans MS', cursive">Comic Sans</option>
-        <option value="'Sarabun', 'Noto Sans Thai', sans-serif">Sarabun (Thai)</option>
-        <option value="'Prompt', sans-serif">Prompt (Thai)</option>
-        <option value="'Kanit', sans-serif">Kanit (Thai)</option>
-        <option value="'IBM Plex Sans Thai', sans-serif">IBM Plex Thai</option>
-        <option value="'Noto Sans Thai', sans-serif">Noto Sans Thai</option>
-        <option value="'Chakra Petch', sans-serif">Chakra Petch (Thai)</option>
-      </select>
-    </div>
-    <div class="font-row">
-      <label>Diagram</label>
+      <label>Family</label>
       <select id="diagram-font-family">
         <option value="system-ui, sans-serif">System UI</option>
         <option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option>
@@ -748,31 +725,15 @@
       });
     });
 
-    // Text size controls
-    const editorFontSize = document.getElementById('editor-font-size');
-    const editorFontLabel = document.getElementById('editor-font-label');
+    // Diagram font controls
     const diagramFontSize = document.getElementById('diagram-font-size');
     const diagramFontLabel = document.getElementById('diagram-font-label');
+    const diagramFontFamily = document.getElementById('diagram-font-family');
 
-    editorFontSize.addEventListener('input', () => {
-      const size = editorFontSize.value + 'px';
-      editorFontLabel.textContent = size;
-      code.style.fontSize = size;
-      document.querySelector('.line-numbers').style.fontSize = size;
-    });
     diagramFontSize.addEventListener('input', () => {
       const size = diagramFontSize.value;
       diagramFontLabel.textContent = size + 'px';
       reInitMermaid();
-    });
-
-    // Font family controls
-    const editorFontFamily = document.getElementById('editor-font-family');
-    const diagramFontFamily = document.getElementById('diagram-font-family');
-
-    editorFontFamily.addEventListener('change', () => {
-      code.style.fontFamily = editorFontFamily.value;
-      document.querySelector('.line-numbers').style.fontFamily = editorFontFamily.value;
     });
     diagramFontFamily.addEventListener('change', () => {
       reInitMermaid();
@@ -1474,7 +1435,6 @@ web_app - satisfies -> session_mgmt`,
         code: code.value,
         theme: currentMermaidTheme,
         bgColor: previewPane.style.background || '#ffffff',
-        editorFontSize: editorFontSize.value,
         diagramFontSize: diagramFontSize.value,
         clrPrimary: clrPrimary.value,
         clrSecondary: clrSecondary.value,
@@ -1482,7 +1442,6 @@ web_app - satisfies -> session_mgmt`,
         clrBackground: clrBackground.value,
         clrText: clrText.value,
         clrLine: clrLine.value,
-        editorFontFamily: editorFontFamily.value,
         diagramFontFamily: diagramFontFamily.value,
       };
       try { localStorage.setItem('mermaid-viewer-state', JSON.stringify(state)); } catch(e) {}
@@ -1494,7 +1453,6 @@ web_app - satisfies -> session_mgmt`,
         const s = JSON.parse(raw);
         if (s.code) code.value = s.code;
         if (s.bgColor) { previewPane.style.background = s.bgColor; bgColorInput.value = s.bgColor; }
-        if (s.editorFontSize) { editorFontSize.value = s.editorFontSize; editorFontLabel.textContent = s.editorFontSize + 'px'; code.style.fontSize = s.editorFontSize + 'px'; document.querySelector('.line-numbers').style.fontSize = s.editorFontSize + 'px'; }
         if (s.diagramFontSize) { diagramFontSize.value = s.diagramFontSize; diagramFontLabel.textContent = s.diagramFontSize + 'px'; }
         if (s.clrPrimary) clrPrimary.value = s.clrPrimary;
         if (s.clrSecondary) clrSecondary.value = s.clrSecondary;
@@ -1502,7 +1460,6 @@ web_app - satisfies -> session_mgmt`,
         if (s.clrBackground) clrBackground.value = s.clrBackground;
         if (s.clrText) clrText.value = s.clrText;
         if (s.clrLine) clrLine.value = s.clrLine;
-        if (s.editorFontFamily) { editorFontFamily.value = s.editorFontFamily; code.style.fontFamily = s.editorFontFamily; document.querySelector('.line-numbers').style.fontFamily = s.editorFontFamily; }
         if (s.diagramFontFamily) { diagramFontFamily.value = s.diagramFontFamily; }
         if (s.theme) {
           currentMermaidTheme = s.theme;
@@ -1512,7 +1469,7 @@ web_app - satisfies -> session_mgmt`,
     }
     // Auto-save on changes
     code.addEventListener('input', saveState);
-    [bgColorInput, clrPrimary, clrSecondary, clrTertiary, clrBackground, clrText, clrLine, editorFontSize, diagramFontSize, editorFontFamily, diagramFontFamily].forEach(el => el.addEventListener('change', saveState));
+    [bgColorInput, clrPrimary, clrSecondary, clrTertiary, clrBackground, clrText, clrLine, diagramFontSize, diagramFontFamily].forEach(el => el.addEventListener('change', saveState));
     bgPresets.forEach(b => b.addEventListener('click', () => setTimeout(saveState, 50)));
     document.querySelectorAll('#theme-presets .preset-btn').forEach(b => b.addEventListener('click', () => setTimeout(saveState, 50)));
 
