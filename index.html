@@ -120,6 +120,7 @@
           <button data-type="swimlane">Swimlane Flowchart</button>
           <button data-type="ganttAdvanced">Gantt (Advanced)</button>
           <button data-type="zenumlTryCatch">ZenUML (Try/Catch)</button>
+          <button data-type="architectureAdv">Architecture (Advanced)</button>
         </div>
       </div>
       <button id="fullscreen-btn" title="Toggle fullscreen preview (F11)">Fullscreen</button>
@@ -1075,6 +1076,20 @@ web_app - satisfies -> session_mgmt`,
     } finally {
       API->BookingService: rollback status
     }`,
+      architectureAdv: `architecture-beta
+    service left_disk(disk)[Disk]
+    service top_disk(disk)[Disk]
+    service bottom_disk(disk)[Disk]
+    service top_gateway(internet)[Gateway]
+    service bottom_gateway(internet)[Gateway]
+    junction junctionCenter
+    junction junctionRight
+    left_disk:R -- L:junctionCenter
+    top_disk:B -- T:junctionCenter
+    bottom_disk:T -- B:junctionCenter
+    junctionCenter:R -- L:junctionRight
+    top_gateway:B -- T:junctionRight
+    bottom_gateway:T -- B:junctionRight`,
       ganttAdvanced: `gantt
     dateFormat  YYYY-MM-DD
     title       Adding GANTT diagram functionality to mermaid
