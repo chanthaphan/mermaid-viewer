@@ -107,6 +107,7 @@
           <button data-format="jpg">Save as JPG</button>
           <button data-format="svg">Save as SVG</button>
           <button data-format="pdf">Save as PDF</button>
+          <button data-format="clipboard">Copy to Clipboard</button>
         </div>
       </div>
     </div>
@@ -120,6 +121,7 @@
       <button class="preset-btn" data-bg="#0d1117" style="background:#0d1117" title="GitHub Dark"></button>
       <button class="preset-btn" data-bg="#fdf6e3" style="background:#fdf6e3" title="Solarized Light"></button>
       <button class="preset-btn" data-bg="#002b36" style="background:#002b36" title="Solarized Dark"></button>
+      <button class="preset-btn" data-bg="transparent" style="background:repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 0 0 / 14px 14px" title="Transparent"></button>
     </div>
     <div class="color-row">
       <label>Custom</label>
@@ -304,8 +306,11 @@
       canvas.width = w * s;
       canvas.height = h * s;
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = previewPane.style.background || '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const bg = previewPane.dataset.bg || '#ffffff';
+      if (bg !== 'transparent') {
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
       // Build a clean SVG data URL with explicit xmlns and dimensions
       let svgStr = info.svgData;
       if (!svgStr.includes('xmlns=')) {
@@ -353,6 +358,15 @@
         download(new Blob([info.svgData], { type: 'image/svg+xml' }), 'mermaid-diagram.svg');
       } else if (format === 'png') {
         exportToCanvas(canvas => canvas.toBlob(b => download(b, 'mermaid-diagram.png'), 'image/png'));
+      } else if (format === 'clipboard') {
+        exportToCanvas(canvas => canvas.toBlob(async (b) => {
+          try {
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': b })]);
+            const origText = saveBtn.textContent;
+            saveBtn.textContent = 'Copied!';
+            setTimeout(() => saveBtn.textContent = origText, 1500);
+          } catch(e) { alert('Copy failed: ' + e.message); }
+        }, 'image/png'));
       } else if (format === 'jpg') {
         exportToCanvas(canvas => canvas.toBlob(b => download(b, 'mermaid-diagram.jpg'), 'image/jpeg', 0.95));
       } else if (format === 'pdf') {
@@ -463,8 +477,14 @@
     const bgPresets = document.querySelectorAll('#bg-presets .preset-btn');
     const bgColorInput = document.getElementById('bg-color');
     function setBgColor(color) {
-      previewPane.style.background = color;
-      bgColorInput.value = color;
+      if (color === 'transparent') {
+        previewPane.style.background = 'repeating-conic-gradient(#e0e0e0 0% 25%, #fff 0% 50%) 0 0 / 20px 20px';
+        previewPane.dataset.bg = 'transparent';
+      } else {
+        previewPane.style.background = color;
+        previewPane.dataset.bg = color;
+        bgColorInput.value = color;
+      }
       bgPresets.forEach(b => b.classList.toggle('active', b.dataset.bg === color));
     }
     bgPresets.forEach(btn => btn.addEventListener('click', () => setBgColor(btn.dataset.bg)));
