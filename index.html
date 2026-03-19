@@ -81,7 +81,9 @@
     .preview-pane.dark .zoom-controls button:hover { background: #45475a; }
     .zoom-label { font-size: 12px; color: #666; min-width: 42px; text-align: center; font-family: system-ui, sans-serif; }
     .preview-pane.dark .zoom-label { color: #a6adc8; }
-    #error { color: #dc2626; padding: 12px 16px; font-size: 13px; font-family: monospace; background: #fef2f2; border-top: 1px solid #fecaca; display: none; max-height: 80px; overflow: auto; }
+    #error { color: #dc2626; padding: 12px 16px; font-size: 13px; font-family: monospace; background: #fef2f2; border-top: 1px solid #fecaca; display: none; max-height: 100px; overflow: auto; cursor: pointer; }
+    #error:hover { background: #fee2e2; }
+    #error .error-hint { display: block; font-size: 11px; color: #9ca3af; margin-top: 4px; }
     .resize-handle { width: 4px; cursor: col-resize; background: #d4d4d4; transition: background 0.15s; }
     .resize-handle:hover, .resize-handle.active { background: #D4A843; }
     /* Mobile tabs */
@@ -326,6 +328,24 @@
     code.addEventListener('scroll', () => {
       lineNumbers.scrollTop = code.scrollTop;
     });
+
+    // Click error to jump to error line
+    errorEl.addEventListener('click', () => {
+      const errorLine = parseInt(errorEl.dataset.errorLine);
+      if (!errorLine) return;
+      // On mobile, switch to editor tab
+      const editorTab = document.querySelector('.mobile-tabs button[data-tab="editor"]');
+      if (editorTab && window.innerWidth <= 768) editorTab.click();
+      // Calculate position and scroll to error line
+      const lines = code.value.split('\n');
+      let pos = 0;
+      for (let i = 0; i < Math.min(errorLine - 1, lines.length); i++) pos += lines[i].length + 1;
+      code.focus();
+      code.setSelectionRange(pos, pos + (lines[errorLine - 1] || '').length);
+      // Scroll to make the line visible
+      const lineHeight = parseFloat(getComputedStyle(code).lineHeight);
+      code.scrollTop = (errorLine - 3) * lineHeight;
+    });
     const saveBtn = document.getElementById('save-btn');
     const themeBtn = document.getElementById('theme-btn');
     const previewPane = document.getElementById('preview-pane');
@@ -347,9 +367,32 @@
         const { svg } = await mermaid.render(id, src);
         preview.innerHTML = svg;
         errorEl.style.display = 'none';
+        // Clear error line highlights
+        lineNumbers.querySelectorAll('span').forEach(s => { s.style.color = ''; s.style.fontWeight = ''; });
         requestAnimationFrame(fitToView);
       } catch (err) {
-        errorEl.textContent = err.message || 'Invalid syntax';
+        const msg = err.message || 'Invalid syntax';
+        // Extract line number from error message
+        const lineMatch = msg.match(/line\s+(\d+)/i);
+        const errorLine = lineMatch ? parseInt(lineMatch[1]) : null;
+        errorEl.innerHTML = '';
+        const msgSpan = document.createElement('span');
+        msgSpan.textContent = msg;
+        errorEl.appendChild(msgSpan);
+        if (errorLine) {
+          const hint = document.createElement('span');
+          hint.className = 'error-hint';
+          hint.textContent = 'Click to jump to line ' + errorLine;
+          errorEl.appendChild(hint);
+          errorEl.dataset.errorLine = errorLine;
+          // Highlight the error line number
+          const lineSpans = lineNumbers.querySelectorAll('span');
+          lineSpans.forEach(s => s.style.color = '');
+          if (lineSpans[errorLine - 1]) {
+            lineSpans[errorLine - 1].style.color = '#dc2626';
+            lineSpans[errorLine - 1].style.fontWeight = 'bold';
+          }
+        }
         errorEl.style.display = 'block';
         // Clean up any leftover error containers mermaid may have added
         const errContainer = document.getElementById(`dmermaid-${renderCounter}`);
