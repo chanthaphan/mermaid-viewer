@@ -68,7 +68,15 @@
     .editor-wrap { flex: 1; display: flex; overflow: hidden; position: relative; }
     .line-numbers { padding: 16px 12px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #f0ead6; color: #1B3D6D; text-align: right; user-select: none; overflow: hidden; min-width: 48px; border-right: 1px solid #d4d4d4; }
     .line-numbers span { display: block; }
-    .editor-pane textarea { flex: 1; resize: none; border: none; outline: none; padding: 16px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #f8fafc; color: #1e293b; tab-size: 2; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+    .editor-pane textarea { flex: 1; resize: none; border: none; outline: none; padding: 16px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: transparent; color: transparent; caret-color: #1e293b; tab-size: 2; white-space: pre; overflow-wrap: normal; overflow-x: auto; position: relative; z-index: 2; }
+    .highlight-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 16px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #f8fafc; tab-size: 2; white-space: pre; overflow-x: auto; overflow-y: auto; z-index: 1; pointer-events: none; color: #1e293b; }
+    .highlight-layer .hl-keyword { color: #7c3aed; font-weight: 600; }
+    .highlight-layer .hl-arrow { color: #0891b2; }
+    .highlight-layer .hl-string { color: #b45309; }
+    .highlight-layer .hl-comment { color: #9ca3af; font-style: italic; }
+    .highlight-layer .hl-label { color: #0d9488; }
+    .highlight-layer .hl-style { color: #db2777; }
+    .highlight-layer .hl-error-line { background: rgba(220,38,38,0.08); text-decoration: underline wavy #dc2626; text-underline-offset: 3px; display: inline-block; width: 100%; }
     .preview-pane { flex: 1; overflow: hidden; position: relative; background: #ffffff; cursor: grab; }
     .preview-pane.grabbing { cursor: grabbing; }
     .preview-pane.dark { background: #1e1e2e; }
@@ -273,6 +281,7 @@
     <div class="editor-pane">
       <div class="editor-wrap">
         <div class="line-numbers" id="line-numbers"></div>
+        <pre class="highlight-layer" id="highlight-layer" aria-hidden="true"></pre>
         <textarea id="code" spellcheck="false">graph TD
     A[Start] --> B{Decision}
     B -->|Yes| C[Do something]
@@ -311,6 +320,49 @@
     const errorEl = document.getElementById('error');
     const lineNumbers = document.getElementById('line-numbers');
 
+    const highlightLayer = document.getElementById('highlight-layer');
+    let currentErrorLine = null;
+
+    const HL_KEYWORDS = /^(graph|flowchart|sequenceDiagram|classDiagram|erDiagram|gantt|pie|stateDiagram-v2|stateDiagram|journey|mindmap|gitGraph|C4Context|timeline|sankey-beta|xychart-beta|block-beta|quadrantChart|requirementDiagram|kanban|packet-beta|architecture-beta|zenuml)$/;
+    const HL_SUB = /^(subgraph|end|participant|actor|autonumber|title|section|dateFormat|excludes|group|service|junction|style|linkStyle|classDef|click|note|loop|alt|opt|par|critical|break|rect|activate|deactivate)$/i;
+    const HL_ARROW = /^(-->|--\>|<--|\.->|==>|---|-\.->|-\.-|==|:R|:L|:T|:B|-->>|->>|--x|--o)$/;
+
+    function highlightLine(line) {
+      // Full-line comment
+      if (/^\s*%%/.test(line)) return '<span class="hl-comment">' + line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
+      // Tokenize: split on spaces, arrows, pipes, quotes, brackets but keep delimiters
+      const tokens = line.match(/("(?:[^"\\]|\\.)*"|\|[^|]*\||-->>\|?|-->>|-->[|]?|-->|<--|\.->|-\.-|==>|---|==|:R|:L|:T|:B|->>|--x|--o|%%.*|\S+|\s+)/g) || [line];
+      return tokens.map(t => {
+        const esc = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        if (/^%%/.test(t)) return '<span class="hl-comment">' + esc + '</span>';
+        if (/^"/.test(t)) return '<span class="hl-string">' + esc + '</span>';
+        if (/^\|/.test(t)) return '<span class="hl-label">' + esc + '</span>';
+        if (HL_ARROW.test(t)) return '<span class="hl-arrow">' + esc + '</span>';
+        if (HL_KEYWORDS.test(t.trim())) return '<span class="hl-keyword">' + esc + '</span>';
+        if (HL_SUB.test(t.trim())) return '<span class="hl-keyword">' + esc + '</span>';
+        if (/^(fill|color|stroke|background):#/.test(t)) return '<span class="hl-style">' + esc + '</span>';
+        return esc;
+      }).join('');
+    }
+    function highlightCode() {
+      const lines = code.value.split('\n');
+      const highlighted = lines.map((line, i) => {
+        let h = highlightLine(line);
+        if (currentErrorLine && i === currentErrorLine - 1) {
+          h = '<span class="hl-error-line">' + h + '</span>';
+        }
+        return h;
+      });
+      highlightLayer.innerHTML = highlighted.join('\n') + '\n';
+    }
+
+    // Sync scroll between textarea, highlight layer, and line numbers
+    code.addEventListener('scroll', () => {
+      highlightLayer.scrollTop = code.scrollTop;
+      highlightLayer.scrollLeft = code.scrollLeft;
+      lineNumbers.scrollTop = code.scrollTop;
+    });
+
     function updateLineNumbers() {
       const lines = code.value.split('\n').length;
       const current = lineNumbers.children.length;
@@ -324,10 +376,6 @@
       lineNumbers.innerHTML = '';
       lineNumbers.appendChild(frag);
     }
-
-    code.addEventListener('scroll', () => {
-      lineNumbers.scrollTop = code.scrollTop;
-    });
 
     // Click error to jump to error line
     errorEl.addEventListener('click', () => {
@@ -367,6 +415,8 @@
         const { svg } = await mermaid.render(id, src);
         preview.innerHTML = svg;
         errorEl.style.display = 'none';
+        currentErrorLine = null;
+        highlightCode();
         // Clear error line highlights
         lineNumbers.querySelectorAll('span').forEach(s => { s.style.color = ''; s.style.fontWeight = ''; });
         requestAnimationFrame(fitToView);
@@ -375,6 +425,8 @@
         // Extract line number from error message
         const lineMatch = msg.match(/line\s+(\d+)/i);
         const errorLine = lineMatch ? parseInt(lineMatch[1]) : null;
+        currentErrorLine = errorLine;
+        highlightCode();
         errorEl.innerHTML = '';
         const msgSpan = document.createElement('span');
         msgSpan.textContent = msg;
@@ -402,6 +454,7 @@
 
     code.addEventListener('input', () => {
       updateLineNumbers();
+      highlightCode();
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(renderDiagram, 300);
     });
@@ -1465,6 +1518,7 @@ web_app - satisfies -> session_mgmt`,
 
     // Initial render
     updateLineNumbers();
+    highlightCode();
     renderDiagram();
     })();
   </script>
