@@ -65,10 +65,11 @@
     .shortcuts-hint { position: absolute; bottom: 12px; left: 12px; font-size: 11px; color: #585b70; z-index: 10; }
     .container { display: flex; flex: 1; overflow: hidden; position: relative; }
     .editor-pane { width: 40%; display: flex; flex-direction: column; border-right: 1px solid #d4d4d4; }
-    .editor-wrap { flex: 1; display: flex; overflow: hidden; position: relative; }
+    .editor-wrap { flex: 1; display: flex; overflow: hidden; }
+    .editor-code-area { flex: 1; position: relative; overflow: hidden; }
     .line-numbers { padding: 16px 12px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #f0ead6; color: #1B3D6D; text-align: right; user-select: none; overflow: hidden; min-width: 48px; border-right: 1px solid #d4d4d4; }
     .line-numbers span { display: block; }
-    .editor-pane textarea { flex: 1; resize: none; border: none; outline: none; padding: 16px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: transparent; color: transparent; caret-color: #1e293b; tab-size: 2; white-space: pre; overflow-wrap: normal; overflow-x: auto; position: relative; z-index: 2; }
+    .editor-pane textarea { position: absolute; top: 0; left: 0; width: 100%; height: 100%; resize: none; border: none; outline: none; padding: 16px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: transparent; color: transparent; caret-color: #1e293b; tab-size: 2; white-space: pre; overflow-wrap: normal; overflow-x: auto; z-index: 2; }
     .highlight-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 16px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 14px; line-height: 1.6; background: #f8fafc; tab-size: 2; white-space: pre; overflow-x: auto; overflow-y: auto; z-index: 1; pointer-events: none; color: #1e293b; }
     .highlight-layer .hl-keyword { color: #7c3aed; font-weight: 600; }
     .highlight-layer .hl-arrow { color: #0891b2; }
@@ -281,13 +282,15 @@
     <div class="editor-pane">
       <div class="editor-wrap">
         <div class="line-numbers" id="line-numbers"></div>
-        <pre class="highlight-layer" id="highlight-layer" aria-hidden="true"></pre>
-        <textarea id="code" spellcheck="false">graph TD
+        <div class="editor-code-area">
+          <pre class="highlight-layer" id="highlight-layer" aria-hidden="true"></pre>
+          <textarea id="code" spellcheck="false">graph TD
     A[Start] --> B{Decision}
     B -->|Yes| C[Do something]
     B -->|No| D[Do something else]
     C --> E[End]
     D --> E</textarea>
+        </div>
       </div>
       <div id="error"></div>
     </div>
