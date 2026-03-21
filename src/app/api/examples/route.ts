@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { EXAMPLES } from '@/lib/examples';
 
+export const dynamic = 'force-static';
+
 export async function GET() {
   const examples = Object.entries(EXAMPLES).map(([key, val]) => ({
     id: key,

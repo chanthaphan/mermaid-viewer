@@ -93,7 +93,7 @@ async function handleRender(req: NextRequest, params: {
         themeVariables,
       });
 
-      return new NextResponse(pngBuffer, {
+      return new NextResponse(new Uint8Array(pngBuffer), {
         headers: {
           ...corsHeaders(),
           ...rlHeaders,
