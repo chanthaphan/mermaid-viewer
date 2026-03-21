@@ -15,6 +15,31 @@ export function getSvgInfo(previewEl: HTMLElement) {
   return { svgData, svgEl };
 }
 
+function inlineComputedStyles(sourceEl: SVGSVGElement, cloneEl: SVGSVGElement) {
+  // Inline computed fill/stroke/font on text and path elements so export matches render
+  const sourceNodes = sourceEl.querySelectorAll('text, tspan, path, rect, circle, ellipse, polygon, polyline, line');
+  const cloneNodes = cloneEl.querySelectorAll('text, tspan, path, rect, circle, ellipse, polygon, polyline, line');
+  for (let i = 0; i < sourceNodes.length && i < cloneNodes.length; i++) {
+    const computed = window.getComputedStyle(sourceNodes[i]);
+    const target = cloneNodes[i] as SVGElement;
+    const tag = target.tagName.toLowerCase();
+    // Inline fill for text elements
+    if (tag === 'text' || tag === 'tspan') {
+      const fill = computed.fill;
+      if (fill && fill !== 'none') target.setAttribute('fill', fill);
+      const fontSz = computed.fontSize;
+      if (fontSz) target.setAttribute('font-size', fontSz);
+      const fontFam = computed.fontFamily;
+      if (fontFam) target.setAttribute('font-family', fontFam);
+    }
+    // Inline stroke for lines/paths
+    if (tag === 'path' || tag === 'line' || tag === 'polyline') {
+      const stroke = computed.stroke;
+      if (stroke && stroke !== 'none') target.setAttribute('stroke', stroke);
+    }
+  }
+}
+
 function replaceForeignObjects(svgEl: SVGSVGElement): SVGSVGElement {
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
   const vb = clone.getAttribute('viewBox');
@@ -67,6 +92,8 @@ export function exportToCanvas(previewEl: HTMLElement, bgColor: string, callback
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
   const clone = replaceForeignObjects(svgEl);
+  // Inline computed styles from the live DOM so export matches what user sees
+  inlineComputedStyles(svgEl, clone);
   const svgStr = new XMLSerializer().serializeToString(clone);
   const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(blob);

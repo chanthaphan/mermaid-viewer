@@ -12,6 +12,16 @@ import Preview from '@/components/Preview';
 import MobileTabs from '@/components/MobileTabs';
 import styles from './page.module.css';
 
+function isDarkBg(color: string): boolean {
+  if (color === 'transparent') return false;
+  const hex = color.replace('#', '');
+  if (hex.length !== 6) return false;
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+}
+
 export default function Home() {
   const [code, setCode] = useState(DEFAULT_CODE);
   const [settings, setSettings] = useState<MermaidSettings>(DEFAULT_SETTINGS);
@@ -72,7 +82,27 @@ export default function Home() {
     if (!m) return;
     const fontSize = s.diagramFontSize + 'px';
     const fontFamily = s.diagramFontFamily;
-    const commonVars = { fontSize, fontFamily };
+    const commonVars: Record<string, string> = { fontSize, fontFamily };
+
+    // Detect dark background to auto-adjust text colors for readability
+    const darkBg = isDarkBg(s.bgColor);
+    if (darkBg && s.theme !== 'base') {
+      // For non-custom themes on dark backgrounds, override text/line colors for readability
+      commonVars.primaryTextColor = '#cdd6f4';
+      commonVars.secondaryTextColor = '#bac2de';
+      commonVars.tertiaryTextColor = '#a6adc8';
+      commonVars.lineColor = '#6c7086';
+      commonVars.primaryBorderColor = '#6c7086';
+      commonVars.signalColor = '#cdd6f4';
+      commonVars.signalTextColor = '#cdd6f4';
+      commonVars.labelTextColor = '#cdd6f4';
+      commonVars.loopTextColor = '#cdd6f4';
+      commonVars.noteBkgColor = '#313244';
+      commonVars.noteTextColor = '#cdd6f4';
+      commonVars.actorTextColor = '#cdd6f4';
+      commonVars.actorLineColor = '#6c7086';
+    }
+
     const themeVars = s.theme === 'base'
       ? {
           ...commonVars,

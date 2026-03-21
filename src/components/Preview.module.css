@@ -11,10 +11,6 @@
   cursor: grabbing;
 }
 
-.dark svg text {
-  fill: #cdd6f4 !important;
-}
-
 .previewInner {
   transform-origin: 0 0;
   position: absolute;
